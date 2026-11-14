@@ -1,0 +1,8 @@
+name = "prdtsusgh"
+compatibility_date = "2026-11-11"
+
+[assets]
+directory = "."
+
+# اطمینان از فعال بودن مسیر workers.dev
+workers_dev = true
