@@ -643,26 +643,40 @@ async function loadMonteCarlo(){
 }
 
 /* ============== بارگذاری همه ============== */
-async function loadAllData(){
-  const [paths,r2,f2,loadings,quality,vif,vifTable,reliability,causalForest,monteCarlo] = await Promise.all([
-    loadPaths(),loadR2(),loadF2(),loadLoadings(),loadQuality(),loadVIF(),
-    loadVIFTable(),loadReliabilityTables(),loadCausalForest(),loadMonteCarlo()
-  ]);
+async function loadAllData() {
+  // دانلود ترتیبی (یکی‌یکی) برای جلوگیری از قطع شدن ارتباط
+  console.log('[Loader] Starting sequential data load...');
+  
+  const paths = await loadPaths();
+  const r2 = await loadR2();
+  const f2 = await loadF2();
+  const loadings = await loadLoadings();
+  const quality = await loadQuality();
+  const vifTable = await loadVIFTable();
+  const reliability = await loadReliabilityTables();
+  const plsPredict = await loadPLSPredict();
+  const monteCarlo = await loadMonteCarlo();
+  const ml = await loadML();
+  const descriptive = await loadDescriptive();
+  const causalForest = await loadCausalForest();
+
+  const sources = {
+    paths: paths.source, r2: r2.source, f2: f2.source,
+    loadings: loadings.source, quality: quality.source, vifTable: vifTable.source,
+    reliability: reliability.source, plsPredict: plsPredict.source,
+    monteCarlo: monteCarlo.source, ml: ml.source, descriptive: descriptive.source,
+    causalForest: causalForest.source
+  };
+
+  const excelCount = Object.values(sources).filter(s => s === 'excel').length;
+  console.log(`[Loader] ${excelCount}/${Object.keys(sources).length} منبع از فایل اکسل بارگذاری شد.`);
+
   return {
-    paths:paths.data,r2:r2.data,f2:f2.data,
-    loadings:loadings.data,quality:quality.data,vif:vif.data,
-    vifTable:vifTable.data,
-    reliability:reliability.data,
-    causalForest:causalForest.data,
-    monteCarlo:monteCarlo.data,
-    htmt:FALLBACK_HTMT,latent:FALLBACK_LATENT,
-    sources:{
-      paths:paths.source,r2:r2.source,f2:f2.source,
-      loadings:loadings.source,quality:quality.source,vif:vif.source,
-      vifTable:vifTable.source,
-      reliability:reliability.source,
-      causalForest:causalForest.source,
-      monteCarlo:monteCarlo.source
-    }
+    paths: paths.data, r2: r2.data, f2: f2.data,
+    loadings: loadings.data, quality: quality.data, vifTable: vifTable.data,
+    reliability: reliability.data, plsPredict: plsPredict.data,
+    monteCarlo: monteCarlo.data, ml: ml.data, descriptive: descriptive.data,
+    causalForest: causalForest.data,
+    htmt: FALLBACK_HTMT, sources
   };
 }
