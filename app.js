@@ -1717,6 +1717,39 @@ const MAIN_TABLE_INTS = {
       در هیچ متغیری داده گمشده گزارش نشده (Missing=۰).<br><br>
       <div class="reason-text"><strong>ارتباط با هدف پژوهش:</strong> سه یافتهٔ کلیدی از این جدول برای تحلیل‌های بعدی: (۱) پراکندگی بالای فاصله و هزینه (SD>۱.۳) پیش‌نیاز کشف ناهمگونی CATE است — اگر این SD کوچک بود، Causal Forest نمی‌توانست چارک‌های HG را تفکیک کند. (۲) چولگی مثبت تحصیلات و فاصله نشان می‌دهد نمونه به سمت «تحصیلات پایین» و «نزدیک شهر» متمایل است که در تفسیر نتایج باید لحاظ شود. (۳) تقارن سن (Skew≈۰) تأیید می‌کند نمونه از نظر سنی نمایندهٔ جامعه است. این جدول، «پایهٔ آماری» تمام تحلیل‌های استنباطی (PLS، Causal Forest، مونت‌کارلو) را می‌سازد.</div>
     `
+  },
+  'causal-forest-table-container': {
+    title: 'جدول تفسیر Causal Forest — اهمیت HG و PR در ایجاد ناهمگونی CATE',
+    text: `
+      <strong>نوع آزمون:</strong> Causal Forest با تخمین‌گر DML + مدل BLP (Best Linear Predictor) برای اعتبارسنجی ناهمگونی<br>
+      <strong>ستون‌های جدول:</strong> متغیر تعدیل‌گر · اهمیت BLP · سهم BLP · اهمیت SHAP · سهم SHAP · وضعیت کالیبراسیون<br>
+      <strong>آستانه‌های تصمیم:</strong> R² مدل BLP ≥ ۰.۵ (کیفیت قابل قبول) · p-value کالیبراسیون < ۰.۰۵ (کالیبره) · اهمیت SHAP > ۰.۲۰ (نقش اساسی)<br><br>
+      <em>چه می‌بینیم و چرا؟</em><br>
+      این جدول، یافته‌های سه نمودار CM9 (Feature Importance)، CM10 (BLP Gauge) و SHAP13 (SHAP Bar) را در یک نگاه تلفیق می‌کند. دو متغیر تعدیل‌گر HG (جغرافیای انسانی) و PR (پیش‌نیازها) هر دو سهم بالایی دارند. اگر R² مدل BLP بالا باشد و آزمون کالیبراسیون معنادار باشد، نتیجه می‌گیریم که ناهمگونی کشف‌شده «سیستماتیک» است، نه «توهم آماری».<br><br>
+      <div class="reason-text"><strong>ارتباط با هدف پژوهش:</strong> این جدول <strong>مهم‌ترین تأیید آماری بخش Causal ML</strong> است. ادعای «ناهمگونی ساختاریافته» فقط زمانی معتبر است که هم مدل BLP بتواند CATE را پیش‌بینی کند (R² بالا) و هم کالیبراسیون برقرار باشد (p<۰.۰۵). هم‌خوانی اهمیت BLP و SHAP (که دو روش مستقل‌اند) نیز تأیید مضاعف است. اگر این جدول کالیبره نبود، تمام تفسیرهای نمودارهای CM1 تا CM12 ممکن بود «توهم آماری» باشند. اکنون می‌دانیم HG و PR «محرک‌های واقعی ناهمگونی» هستند و توصیهٔ سیاستی «هدف‌گیری ترکیبی جغرافیا + پیش‌نیازها» از نظر آماری معتبر است.</div>
+    `
+  },
+  'monte-carlo-table-container': {
+    title: 'جدول تفسیر Monte Carlo — مقایسهٔ استحکام با SmartPLS',
+    text: `
+      <strong>نوع آزمون:</strong> شبیه‌سازی مونت‌کارلو با K = ۱۰,۰۰۰ نمونه (Percentile Bootstrap) برای بررسی استحکام (Robustness) نتایج SmartPLS<br>
+      <strong>ستون‌های جدول:</strong> فرضیه · β SmartPLS · میانگین MC · انحراف معیار MC · CI پایین ۲.۵٪ · CI بالا ۹۷.۵٪ · تفاضل Δ = MC_Mean − SmartPLS · نتیجه<br>
+      <strong>آستانه‌های تصمیم:</strong> |Δ| < ۰.۰۲ (همسویی کامل) · ۰.۰۲ ≤ |Δ| < ۰.۰۵ (همسویی قابل قبول) · |Δ| ≥ ۰.۰۵ (نیاز به بازبینی)<br><br>
+      <em>چه می‌بینیم و چرا؟</em><br>
+      این جدول، استاندارد «گزارش شفاف» روش‌شناسی است. برای هر فرضیه، هم برآورد SmartPLS (که از ۵,۰۰۰ زیرنمونهٔ بوت‌استرپ داخل نرم‌افزار می‌آید) و هم برآورد Monte Carlo (از ۱۰,۰۰۰ شبیه‌سازی مستقل در پایتون) گزارش می‌شود. اگر تفاضل Δ کوچک باشد، نتیجه می‌گیریم که یافته‌ها «به روش آماری وابسته نیستند».<br><br>
+      <div class="reason-text"><strong>ارتباط با هدف پژوهش:</strong> اگر فقط SmartPLS داشتیم، ممکن بود کسی بگوید «شاید نتیجه از الگوریتم بوت‌استرپ نرم‌افزار آمده». اما وقتی دو روش کاملاً مستقل (SmartPLS و MC) هم‌خوانی دارند، <strong>اعتبار علمی</strong> چند برابر می‌شود. این جدول مکمل نمودار CM19 (پراکنش MC vs SmartPLS) و CM16 (Forest Plot اثرات غیرمستقیم) است و «چک‌لیست استاندارد مقالات PLS-SEM» را تکمیل می‌کند. اگر Δ بزرگ بود (مثلاً ۰.۱)، باید علت را بررسی می‌کردیم — اما Δ کوچک یعنی «نتایج پایدارند».</div>
+    `
+  },
+  'simple-slopes-table-container': {
+    title: 'جدول تفسیر تحلیل شیب ساده — معناداری اثر در سه سطح تعدیل‌گر',
+    text: `
+      <strong>نوع آزمون:</strong> Simple Slope Analysis — محاسبهٔ شیب اثر متغیر مستقل بر وابسته در سه سطح تعدیل‌گر: منهای یک انحراف معیار، میانگین، به‌علاوهٔ یک انحراف معیار<br>
+      <strong>ستون‌های جدول:</strong> تعدیل‌گر · سطح (کم/متوسط/زیاد) · مقدار تعدیل‌گر · شیب β در آن سطح · خطای استاندارد · مقدار t · p-value · فاصلهٔ اطمینان ۹۵٪ · نتیجه (معنادار/غیرمعنادار)<br>
+      <strong>آستانهٔ تصمیم:</strong> معناداری شیب وقتی p < ۰.۰۵ یا وقتی CI ۹۵٪ صفر را قطع نکند.<br><br>
+      <em>چه می‌بینیم و چرا؟</em><br>
+      این جدول، نسخهٔ «آماری» نمودار <code>chart-l1-slopes</code> است. در نمودار، فقط سه خط شیب با βهای ثابت رسم می‌شد — بدون آزمون معناداری. اما جدول جدید، برای هر سطح تعدیل‌گر، <strong>شیب اختصاصی</strong>، <strong>خطای استاندارد</strong>، <strong>t-value</strong> و <strong>p-value</strong> را گزارش می‌کند.<br><br>
+      <div class="reason-text"><strong>ارتباط با هدف پژوهش:</strong> فرضیه‌های H4a، H4b، H4c، H6a، H6b، H6c (تعدیل‌گری) فقط زمانی کامل تفسیر می‌شوند که نشان دهیم «اثر در سطوح مختلف تعدیل‌گر معنادار است یا نه». بدون این جدول، ادعای «شیب در سطح HG بالا قوی‌تر است» فقط یک مشاهدهٔ بصری است. با این جدول، مثلاً می‌بینیم شیب HG×PR→DT در سطح PR پایین غیرمعنادار است ولی در سطح PR بالا معنادار — که یعنی «اثر HG بر DT فقط در حضور PR بالا فعال می‌شود». این دقیقاً همان پیام «هم‌زمانی سیاست‌ها» است که مقاله می‌خواهد برساند.</div>
+    `
   }
 };
 
@@ -1761,6 +1794,39 @@ const MAIN_TABLE_INTS_EN = {
       <strong>Cost:</strong> Mean=2.71, SD=1.356, Skew=0.991 (mirror distribution of distance)<br>
       No variable reports missing data (Missing=0).<br><br>
       <div class="reason-text"><strong>Link to research goal:</strong> Three key findings feed into later analyses: (1) high dispersion of distance and cost (SD>1.3) is the prerequisite for discovering CATE heterogeneity — small SD would prevent Causal Forest from distinguishing HG quartiles; (2) positive skew in education and distance indicates the sample leans toward "low education" and "near city", which must be considered when interpreting results; (3) age symmetry (Skew≈0) confirms the sample is age-representative. This table is the "statistical foundation" of all inferential analyses (PLS, Causal Forest, Monte Carlo).</div>
+    `
+  }  ,
+  'causal-forest-table-container': {
+    title: 'Causal Forest Interpretation Table — Importance of HG and PR in CATE Heterogeneity',
+    text: `
+      <strong>Test type:</strong> Causal Forest with DML estimator + BLP (Best Linear Predictor) model for heterogeneity validation<br>
+      <strong>Columns:</strong> Moderator · BLP Importance · BLP Share · SHAP Importance · SHAP Share · Calibration Status<br>
+      <strong>Thresholds:</strong> BLP R² ≥ 0.5 (acceptable quality) · Calibration p-value < 0.05 (calibrated) · SHAP importance > 0.20 (fundamental role)<br><br>
+      <em>What we see and why:</em><br>
+      This table integrates findings from CM9 (Feature Importance), CM10 (BLP Gauge), and SHAP13 (SHAP Bar). Both moderators HG and PR have substantial contributions. If the BLP R² is high and the calibration test is significant, the discovered heterogeneity is "systematic," not a "statistical illusion."<br><br>
+      <div class="reason-text"><strong>Link to research goal:</strong> This table is the <strong>most important statistical confirmation of the Causal ML section</strong>. The claim of "structured heterogeneity" is only valid when (1) the BLP model predicts CATE (high R²) and (2) the model is calibrated (p<0.05). Agreement between BLP and SHAP importance (two independent methods) adds dual validation. If this table were not calibrated, all interpretations of CM1-CM12 could be a "statistical illusion". Now we know HG and PR are "genuine drivers of heterogeneity", and the policy recommendation "combined targeting of geography + prerequisites" is statistically justified.</div>
+    `
+  },
+  'monte-carlo-table-container': {
+    title: 'Monte Carlo Interpretation Table — Robustness Comparison with SmartPLS',
+    text: `
+      <strong>Test type:</strong> Monte Carlo simulation with K = 10,000 samples (Percentile Bootstrap) for robustness check against SmartPLS<br>
+      <strong>Columns:</strong> Hypothesis · SmartPLS β · MC Mean · MC SD · CI Low 2.5% · CI High 97.5% · Δ = MC_Mean − SmartPLS · Result<br>
+      <strong>Thresholds:</strong> |Δ| < 0.02 (full agreement) · 0.02 ≤ |Δ| < 0.05 (acceptable agreement) · |Δ| ≥ 0.05 (needs review)<br><br>
+      <em>What we see and why:</em><br>
+      This table is the "transparent reporting" standard. For each hypothesis, both the SmartPLS estimate (5,000 bootstrap subsamples inside the software) and the Monte Carlo estimate (10,000 independent simulations in Python) are shown. Small Δ means findings "do not depend on statistical method".<br><br>
+      <div class="reason-text"><strong>Link to research goal:</strong> If only SmartPLS were available, someone might argue "the result comes from the software's bootstrap". But when two completely independent methods (SmartPLS and MC) agree, <strong>scientific credibility</strong> multiplies. This table complements CM19 (MC vs SmartPLS scatter) and CM16 (Forest Plot of indirect effects), completing the "standard PLS-SEM checklist". If Δ were large (e.g., 0.1), we would need to investigate — but small Δ means "results are robust".</div>
+    `
+  },
+  'simple-slopes-table-container': {
+    title: 'Simple Slopes Interpretation Table — Effect Significance at Three Moderator Levels',
+    text: `
+      <strong>Test type:</strong> Simple Slope Analysis — computing the effect of independent variable on dependent at three moderator levels: minus one SD, mean, plus one SD<br>
+      <strong>Columns:</strong> Moderator · Level (low/mean/high) · Moderator Value · Slope β at that level · Standard Error · t-value · p-value · 95% CI · Result (significant/not)<br>
+      <strong>Decision threshold:</strong> Slope is significant when p < 0.05 or when the 95% CI excludes zero.<br><br>
+      <em>What we see and why:</em><br>
+      This table is the "statistical" version of the <code>chart-l1-slopes</code> plot. The chart only drew three slope lines with fixed βs — without significance testing. But the new table reports, for each moderator level, the <strong>specific slope</strong>, <strong>standard error</strong>, <strong>t-value</strong>, and <strong>p-value</strong>.<br><br>
+      <div class="reason-text"><strong>Link to research goal:</strong> Hypotheses H4a, H4b, H4c, H6a, H6b, H6c (moderation) are fully interpretable only when we show "whether the effect is significant at different moderator levels". Without this table, the claim "slope is stronger at high HG" is only a visual observation. With this table, for example, we see the HG×PR→DT slope is non-significant at low PR but significant at high PR — meaning "the HG effect on DT only activates in the presence of high PR". This is exactly the "simultaneous policy" message of the paper.</div>
     `
   }
 };
@@ -2213,11 +2279,22 @@ function renderCausalMLSection(){
     html += buildAdvancedChartCard({ id: card.id, title: title, badges: card.badges, height: card.height, interp: cmInterp(card.n), source: sources[card.n - 1] || '', test: 'Causal Forest DML', legend: legends[card.n] || null });
   });
   html += '</div>';
+  /* ===== کانتینر جداول تفسیری جدید ===== */
+  html += `<div class="interp-tables-section" style="margin-top:24px; display:flex; flex-direction:column; gap:22px;">
+    <div id="causal-forest-table-container"></div>
+    <div id="simple-slopes-table-container"></div>
+  </div>`;
   container.innerHTML = html;
   plotCM1_3DHist(cf); plotCM2_Ranked(cf); plotCM3_3DHG(cf); plotCM4_Binned(cf);
   plotCM5_PDP(cf); plotCM6_BoxPR(cf); plotCM7_3DScatter(cf); plotCM8_3DSurface(cf);
   plotCM9_FeatImp(cf); plotCM10_BLP(cf); plotCM11_TOC(cf); plotCM12_Qini(cf);
-}function plotCM1_3DHist(cf){ const r=cf.CATE_Distribution||[]; const vals=r.map(d=>d.CATE).filter(v=>v!=null); if(!vals.length)return; const NB=20,min=Math.min(...vals),max=Math.max(...vals),bw=(max-min)/NB; const bins=Array(NB).fill(0); vals.forEach(v=>{const i=Math.min(Math.floor((v-min)/bw),NB-1); bins[i]++;}); const mean=vals.reduce((a,b)=>a+b,0)/vals.length; const xs=[],ys=[],zs=[]; bins.forEach((c,i)=>{const xc=min+bw*(i+0.5); xs.push(xc,xc,null); ys.push(0,0,null); zs.push(0,c,null);}); const sc={xaxis:{title:'CATE',gridcolor:themeColors().grid},yaxis:{showticklabels:false,range:[-1,1],gridcolor:themeColors().grid},zaxis:{title:'Freq',gridcolor:themeColors().grid},camera:{eye:{x:1.6,y:-1.6,z:0.9}}}; Plotly.newPlot('cm-1',[{type:'scatter3d',mode:'lines',x:xs,y:ys,z:zs,line:{color:'#3498db',width:6},hoverinfo:'skip',showlegend:false},{type:'scatter3d',mode:'markers',x:bins.map((_,i)=>min+bw*(i+0.5)),y:bins.map(()=>0),z:bins,marker:{size:bins.map(c=>8+c*0.5),color:bins.map((_,i)=>min+bw*(i+0.5)),colorscale:'Plasma',line:{color:'#fff',width:1}},hovertemplate:'CATE: %{x:.3f}<br>Freq: %{z}<extra></extra>',showlegend:false},{type:'scatter3d',mode:'lines',x:[mean,mean],y:[0,0],z:[0,Math.max(...bins)*1.1],line:{color:'#e74c3c',width:6,dash:'dash'},hoverinfo:'skip',showlegend:false}],plotlyLayout({scene:sc,showlegend:false,margin:{l:0,r:0,t:10,b:0}}),PLOTLY_CFG); }
+
+  /* ===== رندر جداول تفسیری جدید ===== */
+  renderCausalForestTable();
+  renderSimpleSlopesTable();
+  setTimeout(() => { if (typeof injectMainInterpretations === 'function') injectMainInterpretations(); }, 200);
+}
+function plotCM1_3DHist(cf){ const r=cf.CATE_Distribution||[]; const vals=r.map(d=>d.CATE).filter(v=>v!=null); if(!vals.length)return; const NB=20,min=Math.min(...vals),max=Math.max(...vals),bw=(max-min)/NB; const bins=Array(NB).fill(0); vals.forEach(v=>{const i=Math.min(Math.floor((v-min)/bw),NB-1); bins[i]++;}); const mean=vals.reduce((a,b)=>a+b,0)/vals.length; const xs=[],ys=[],zs=[]; bins.forEach((c,i)=>{const xc=min+bw*(i+0.5); xs.push(xc,xc,null); ys.push(0,0,null); zs.push(0,c,null);}); const sc={xaxis:{title:'CATE',gridcolor:themeColors().grid},yaxis:{showticklabels:false,range:[-1,1],gridcolor:themeColors().grid},zaxis:{title:'Freq',gridcolor:themeColors().grid},camera:{eye:{x:1.6,y:-1.6,z:0.9}}}; Plotly.newPlot('cm-1',[{type:'scatter3d',mode:'lines',x:xs,y:ys,z:zs,line:{color:'#3498db',width:6},hoverinfo:'skip',showlegend:false},{type:'scatter3d',mode:'markers',x:bins.map((_,i)=>min+bw*(i+0.5)),y:bins.map(()=>0),z:bins,marker:{size:bins.map(c=>8+c*0.5),color:bins.map((_,i)=>min+bw*(i+0.5)),colorscale:'Plasma',line:{color:'#fff',width:1}},hovertemplate:'CATE: %{x:.3f}<br>Freq: %{z}<extra></extra>',showlegend:false},{type:'scatter3d',mode:'lines',x:[mean,mean],y:[0,0],z:[0,Math.max(...bins)*1.1],line:{color:'#e74c3c',width:6,dash:'dash'},hoverinfo:'skip',showlegend:false}],plotlyLayout({scene:sc,showlegend:false,margin:{l:0,r:0,t:10,b:0}}),PLOTLY_CFG); }
 function plotCM2_Ranked(cf){ const r=cf.CATE_Distribution||[]; const vals=r.map(d=>d.CATE).filter(v=>v!=null).sort((a,b)=>a-b); if(!vals.length)return; Plotly.newPlot('cm-2',[{type:'scatter',mode:'lines',x:vals.map((_,i)=>i+1),y:vals,line:{color:'#3498db',width:2},fill:'tozeroy',fillcolor:'rgba(52,152,219,0.15)',hovertemplate:'Rank: %{x}<br>CATE: %{y:.4f}<extra></extra>'}],plotlyLayout({xaxis:{title:'Rank',gridcolor:themeColors().grid},yaxis:{title:'CATE',gridcolor:themeColors().grid},shapes:[{type:'line',x0:0,x1:vals.length,y0:0.333,y1:0.333,line:{color:'#e74c3c',dash:'dash',width:2}},{type:'line',x0:0,x1:vals.length,y0:0.533,y1:0.533,line:{color:'#27ae60',dash:'dash',width:2}}]}),PLOTLY_CFG); }
 function plotCM3_3DHG(cf){ const r=cf.HG_Quartiles||[]; if(!r.length)return; const vals=r.map(d=>d.Mean_CATE),sds=r.map(d=>d.SD_CATE),labels=r.map(d=>d.HG_Quartile); const colors=['#e74c3c','#f39c12','#3498db','#27ae60']; const xs=[],ys=[],zs=[]; vals.forEach((v,i)=>{xs.push(i,i,null); ys.push(0,0,null); zs.push(0,v,null);}); const sc={xaxis:{title:'',tickvals:[0,1,2,3],ticktext:labels,gridcolor:themeColors().grid},yaxis:{showticklabels:false,range:[-1,1],gridcolor:themeColors().grid},zaxis:{title:'CATE',gridcolor:themeColors().grid},camera:{eye:{x:1.6,y:-1.6,z:0.9}}}; Plotly.newPlot('cm-3',[{type:'scatter3d',mode:'lines',x:xs,y:ys,z:zs,line:{color:'#7f8c9c',width:8},hoverinfo:'skip',showlegend:false},{type:'scatter3d',mode:'markers',x:vals.map((_,i)=>i),y:vals.map(()=>0),z:vals,marker:{size:22,color:colors,line:{color:'#fff',width:2}},text:labels,customdata:r.map(d=>[d.N,d.SD_CATE]),hovertemplate:'<b>%{text}</b><br>CATE: %{z:.4f}<br>N: %{customdata[0]}<extra></extra>',showlegend:false},{type:'scatter3d',mode:'lines',x:vals.flatMap((_,i)=>[i,i,null]),y:vals.flatMap(()=>[0,0,null]),z:vals.flatMap((v,i)=>[v-sds[i],v+sds[i],null]),line:{color:'#e8ecf1',width:3},hoverinfo:'skip',showlegend:false}],plotlyLayout({scene:sc,showlegend:false,margin:{l:0,r:0,t:10,b:0}}),PLOTLY_CFG); }
 function plotCM4_Binned(cf){ const r=cf.Full_Data||[]; if(!r.length)return; const hg=r.map(d=>d.HG_score),cate=r.map(d=>d.CATE); const bins=10,min=Math.min(...hg),max=Math.max(...hg),bw=(max-min)/bins,bd=[]; for(let i=0;i<bins;i++){const lo=min+i*bw,hi=min+(i+1)*bw,inB=[]; cate.forEach((c,j)=>{if(hg[j]>=lo&&hg[j]<hi)inB.push(c);}); if(inB.length>0){const mean=inB.reduce((a,b)=>a+b,0)/inB.length; const sd=Math.sqrt(inB.reduce((a,b)=>a+(b-mean)**2,0)/inB.length); bd.push({x:(lo+hi)/2,mean,se:1.96*sd/Math.sqrt(inB.length),n:inB.length});}} Plotly.newPlot('cm-4',[{type:'scatter',mode:'lines+markers',x:bd.map(b=>b.x),y:bd.map(b=>b.mean),marker:{size:12,color:'#3498db'},line:{color:'#3498db',width:2},error_y:{type:'data',array:bd.map(b=>b.se),color:'#e8ecf1',thickness:2,width:6},customdata:bd.map(b=>b.n),hovertemplate:'HG: %{x:.2f}<br>CATE: %{y:.4f}<br>N: %{customdata}<extra></extra>'}],plotlyLayout({xaxis:{title:'HG',gridcolor:themeColors().grid},yaxis:{title:'CATE (95% CI)',gridcolor:themeColors().grid}}),PLOTLY_CFG); }
@@ -2286,11 +2363,20 @@ function renderMonteCarloSection(){
     html += buildAdvancedChartCard({ id: card.id, title: title, badges: card.badges, height: card.height, interp: mcInterp(card.n), source: mcSources[idx] || '', test: 'Monte Carlo Simulation', legend: legends[card.n] || null });
   });
   html += '</div>';
+  /* ===== کانتینر جدول تفسیری جدید ===== */
+  html += `<div class="interp-tables-section" style="margin-top:24px;">
+    <div id="monte-carlo-table-container"></div>
+  </div>`;
   container.innerHTML = html;
   plotMC15_EffectsBar(mc); plotMC16_Forest(mc); plotMC17_3DIndirect(mc);
   plotMC18_3DMod(mc); plotMC19_Compare(mc); plotMC20_Density(mc);
   plotMC21_Ridge(mc); plotMC22_QQ(mc);
-}function plotMC15_EffectsBar(mc){ const ind=mc.Indirect_Effects||[],mod=mc.Moderator_Effects||[]; const all=[...ind,...mod]; if(!all.length)return; Plotly.newPlot('mc-15',[{type:'bar',x:all.map(d=>d.Hypothesis),y:all.map(d=>d.MC_Mean),marker:{color:all.map(d=>d.Hypothesis.startsWith('H3')?'#3498db':'#e67e22'),line:{color:'#fff',width:2}},text:all.map(d=>d.MC_Mean.toFixed(3)),textposition:'outside',customdata:all.map(d=>d.Result),hovertemplate:'<b>%{x}</b><br>%{y:.4f}<br>%{customdata}<extra></extra>'}],plotlyLayout({xaxis:{title:'Hypothesis',gridcolor:themeColors().grid},yaxis:{title:'Effect',gridcolor:themeColors().grid,range:[0,0.32]},showlegend:false}),PLOTLY_CFG); }
+
+  /* ===== رندر جدول تفسیری جدید ===== */
+  renderMonteCarloTable();
+  setTimeout(() => { if (typeof injectMainInterpretations === 'function') injectMainInterpretations(); }, 200);
+}
+function plotMC15_EffectsBar(mc){ const ind=mc.Indirect_Effects||[],mod=mc.Moderator_Effects||[]; const all=[...ind,...mod]; if(!all.length)return; Plotly.newPlot('mc-15',[{type:'bar',x:all.map(d=>d.Hypothesis),y:all.map(d=>d.MC_Mean),marker:{color:all.map(d=>d.Hypothesis.startsWith('H3')?'#3498db':'#e67e22'),line:{color:'#fff',width:2}},text:all.map(d=>d.MC_Mean.toFixed(3)),textposition:'outside',customdata:all.map(d=>d.Result),hovertemplate:'<b>%{x}</b><br>%{y:.4f}<br>%{customdata}<extra></extra>'}],plotlyLayout({xaxis:{title:'Hypothesis',gridcolor:themeColors().grid},yaxis:{title:'Effect',gridcolor:themeColors().grid,range:[0,0.32]},showlegend:false}),PLOTLY_CFG); }
 function plotMC16_Forest(mc){ const rows=mc.Indirect_Effects||[]; if(!rows.length)return; Plotly.newPlot('mc-16',[{type:'scatter',mode:'markers',x:rows.map(d=>d.MC_Mean),y:rows.map(d=>d.Hypothesis+' — '+d.Effect),marker:{size:14,color:'#3498db',line:{color:'#fff',width:2}},error_x:{type:'data',symmetric:false,array:rows.map(d=>d.CI_High-d.MC_Mean),arrayminus:rows.map(d=>d.MC_Mean-d.CI_Low),color:'#e8ecf1',thickness:2,width:8},customdata:rows.map(d=>[d.CI_Low,d.CI_High,d.SmartPLS_Beta]),hovertemplate:'<b>%{y}</b><br>MC: %{x:.4f}<br>CI: (%{customdata[0]:.4f}, %{customdata[1]:.4f})<extra></extra>'}],plotlyLayout({xaxis:{title:'Effect',gridcolor:themeColors().grid,zeroline:true,zerolinecolor:'#e74c3c',zerolinewidth:2},yaxis:{title:'',gridcolor:themeColors().grid},margin:{l:200,r:40,t:10,b:50},showlegend:false}),PLOTLY_CFG); }
 function plotMC17_3DIndirect(mc){ const rows=mc.Indirect_Effects||[]; if(!rows.length)return; const labels=rows.map(d=>d.Hypothesis),vals=rows.map(d=>d.MC_Mean); const colors=['#3498db','#e67e22','#27ae60','#9b59b6','#e74c3c']; const xs=[],ys=[],zs=[]; vals.forEach((v,i)=>{xs.push(i,i,null); ys.push(0,0,null); zs.push(0,v,null);}); const sc={xaxis:{title:'',tickvals:vals.map((_,i)=>i),ticktext:labels,gridcolor:themeColors().grid},yaxis:{showticklabels:false,range:[-1,1],gridcolor:themeColors().grid},zaxis:{title:'Effect',gridcolor:themeColors().grid},camera:{eye:{x:1.6,y:-1.6,z:0.9}}}; Plotly.newPlot('mc-17',[{type:'scatter3d',mode:'lines',x:xs,y:ys,z:zs,line:{color:'#7f8c9c',width:8},hoverinfo:'skip',showlegend:false},{type:'scatter3d',mode:'markers',x:vals.map((_,i)=>i),y:vals.map(()=>0),z:vals,marker:{size:20,color:vals.map((_,i)=>colors[i%colors.length]),line:{color:'#fff',width:2}},text:labels,customdata:rows.map(d=>[d.CI_Low,d.CI_High,d.SmartPLS_Beta,d.Result]),hovertemplate:'<b>%{text}</b><br>MC: %{z:.4f}<br>CI: (%{customdata[0]:.4f}, %{customdata[1]:.4f})<extra></extra>',showlegend:false},{type:'scatter3d',mode:'lines',x:vals.flatMap((_,i)=>[i,i,null]),y:vals.flatMap(()=>[0,0,null]),z:vals.flatMap((v,i)=>[rows[i].CI_Low,rows[i].CI_High,null]),line:{color:'#e8ecf1',width:3},hoverinfo:'skip',showlegend:false}],plotlyLayout({scene:sc,showlegend:false,margin:{l:0,r:0,t:10,b:0}}),PLOTLY_CFG); }
 function plotMC18_3DMod(mc){ const rows=mc.Moderator_Effects||[]; if(!rows.length)return; const labels=rows.map(d=>d.Hypothesis),vals=rows.map(d=>d.MC_Mean); const colors=['#3498db','#e67e22','#27ae60']; const xs=[],ys=[],zs=[]; vals.forEach((v,i)=>{xs.push(i,i,null); ys.push(0,0,null); zs.push(0,v,null);}); const sc={xaxis:{title:'',tickvals:vals.map((_,i)=>i),ticktext:labels,gridcolor:themeColors().grid},yaxis:{showticklabels:false,range:[-1,1],gridcolor:themeColors().grid},zaxis:{title:'Effect',gridcolor:themeColors().grid},camera:{eye:{x:1.6,y:-1.6,z:0.9}}}; Plotly.newPlot('mc-18',[{type:'scatter3d',mode:'lines',x:xs,y:ys,z:zs,line:{color:'#7f8c9c',width:8},hoverinfo:'skip',showlegend:false},{type:'scatter3d',mode:'markers',x:vals.map((_,i)=>i),y:vals.map(()=>0),z:vals,marker:{size:20,color:vals.map((_,i)=>colors[i%colors.length]),line:{color:'#fff',width:2}},text:labels,customdata:rows.map(d=>[d.CI_Low,d.CI_High,d.SmartPLS_Beta,d.Result]),hovertemplate:'<b>%{text}</b><br>MC: %{z:.4f}<extra></extra>',showlegend:false},{type:'scatter3d',mode:'lines',x:vals.flatMap((_,i)=>[i,i,null]),y:vals.flatMap(()=>[0,0,null]),z:vals.flatMap((v,i)=>[rows[i].CI_Low,rows[i].CI_High,null]),line:{color:'#e8ecf1',width:3},hoverinfo:'skip',showlegend:false}],plotlyLayout({scene:sc,showlegend:false,margin:{l:0,r:0,t:10,b:0}}),PLOTLY_CFG); }
@@ -2299,6 +2385,208 @@ function plotMC20_Density(mc){ const r=mc.Distribution_Samples||[]; if(!r.length
 function plotMC21_Ridge(mc){ const r=mc.Distribution_Samples||[]; if(!r.length)return; const byE={}; r.forEach(d=>{if(!byE[d.Effect])byE[d.Effect]=[]; byE[d.Effect].push(d.Value);}); const effs=Object.keys(byE); const allV=Object.values(byE).flat(); const min=Math.min(...allV),max=Math.max(...allV); const g=Array.from({length:80},(_,i)=>min+(max-min)*i/79); const colors=['#3498db','#e67e22','#27ae60','#9b59b6','#e74c3c','#f39c12','#1abc9c','#e91e63']; const traces=effs.map((eff,idx)=>{const v=byE[eff],m=v.reduce((a,b)=>a+b,0)/v.length; const sd=Math.sqrt(v.reduce((a,b)=>a+(b-m)**2,0)/v.length)||0.01; const pdf=g.map(x=>Math.exp(-((x-m)**2)/(2*sd*sd))/(sd*Math.sqrt(2*Math.PI))); return {type:'scatter3d',mode:'lines',x:g,y:Array(g.length).fill(idx),z:pdf,line:{color:colors[idx%colors.length],width:6},showlegend:false,hovertemplate:'<b>'+eff+'</b><br>%{x:.4f}<br>%{z:.4f}<extra></extra>'};}); const sc={xaxis:{title:'Value',gridcolor:themeColors().grid},yaxis:{title:'',tickvals:effs.map((_,i)=>i),ticktext:effs,gridcolor:themeColors().grid},zaxis:{title:'Density',gridcolor:themeColors().grid},camera:{eye:{x:1.8,y:-1.6,z:0.8}}}; Plotly.newPlot('mc-21',traces,plotlyLayout({scene:sc,showlegend:false,margin:{l:0,r:0,t:10,b:0}}),PLOTLY_CFG); }
 function invNormPlot(p){ const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00]; const b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01]; const c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00]; const d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00]; const pl=0.02425,ph=1-pl; if(p<pl){const q=Math.sqrt(-2*Math.log(p)); return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);} else if(p<=ph){const q=p-0.5,r=q*q; return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);} else {const q=Math.sqrt(-2*Math.log(1-p)); return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);} }
 function plotMC22_QQ(mc){ const r=mc.Distribution_Samples||[]; const eff='H3a (PR→DT→SUS)'; const v=r.filter(d=>d.Effect===eff).map(d=>d.Value).sort((a,b)=>a-b); if(v.length<3)return; const n=v.length,m=v.reduce((a,b)=>a+b,0)/n; const sd=Math.sqrt(v.reduce((a,b)=>a+(b-m)**2,0)/n)||0.01; const theo=v.map((_,i)=>m+sd*invNormPlot((i+0.5)/n)); Plotly.newPlot('mc-22',[{type:'scatter',mode:'markers',x:theo,y:v,marker:{color:'#3498db',size:5}},{type:'scatter',mode:'lines',x:[Math.min(...theo),Math.max(...theo)],y:[Math.min(...theo),Math.max(...theo)],line:{color:'#e74c3c',dash:'dash',width:2}}],plotlyLayout({xaxis:{title:'Theoretical normal',gridcolor:themeColors().grid},yaxis:{title:'Sample',gridcolor:themeColors().grid},showlegend:false}),PLOTLY_CFG); }
+/* ================================================================
+   ADVANCED INTERPRETATION TABLES (Causal Forest / MC / Simple Slopes)
+   ================================================================ */
+
+function _safeNum(v, def = null) {
+  if (v === null || v === undefined || v === '' || isNaN(Number(v))) return def;
+  return Number(v);
+}
+
+function _statusChip(ok, isFa, okTxt, warnTxt) {
+  if (ok === null || ok === undefined) return `<span class="status-warn">—</span>`;
+  return ok
+    ? `<span class="status-ok">✓ ${okTxt || (isFa?'کالیبره':'Calibrated')}</span>`
+    : `<span class="status-bad">✕ ${warnTxt || (isFa?'نیاز به بازبینی':'Needs review')}</span>`;
+}
+
+/* ---- جدول ۱: Causal Forest ---- */
+function renderCausalForestTable(){
+  const cont = document.getElementById('causal-forest-table-container');
+  if (!cont) return;
+  const cf = (state.loaded && state.loaded.causalForest) || FALLBACK_CAUSAL_FOREST;
+  const isFa = state.lang === 'fa';
+
+  const ov = cf.OverviewObj || (cf.Overview || []).reduce((o, r) => { o[r.Metric] = r.Value; return o; }, {});
+  const blpR2 = _safeNum(ov.BLP_R2, null);
+  const calibP = _safeNum(ov.Calibration_Test_Pval, null);
+  const isCalibrated = (calibP !== null && calibP < 0.05);
+
+  const featImp = cf.Feature_Importance || [];
+  const shapImp = cf.SHAP_Importance || [];
+  const shapMap = {};
+  shapImp.forEach(s => { shapMap[s.Feature] = _safeNum(s.Mean_Abs_SHAP, 0); });
+
+  const totalBLP = featImp.reduce((s, d) => s + _safeNum(d.Importance, 0), 0) || 1;
+  const totalSHAP = shapImp.reduce((s, d) => s + _safeNum(s.Mean_Abs_SHAP, 0), 0) || 1;
+
+  let head = `<div class="interp-table-head">
+    <h3>${isFa ? 'جدول تفسیر Causal Forest (CATE)' : 'Causal Forest Interpretation Table'}</h3>
+    <div class="interp-table-summary">
+      <span>${isFa?'R² مدل BLP':'BLP R²'}: <b>${blpR2 !== null ? blpR2.toFixed(3) : '—'}</b></span>
+      <span>${isFa?'p-value کالیبراسیون':'Calibration p-value'}: <b>${calibP !== null ? calibP.toFixed(4) : '—'}</b></span>
+      <span>${_statusChip(calibP === null ? null : isCalibrated, isFa, 'کالیبره', 'نیاز به بازبینی')}</span>
+    </div>
+  </div>`;
+
+  if (!featImp.length) {
+    cont.innerHTML = head + `<div class="interp-table-wrap"><div style="padding:20px;text-align:center;color:var(--text-muted)">${isFa?'شیت Feature_Importance یافت نشد':'Feature_Importance sheet not found'}</div></div>`;
+    return;
+  }
+
+  let rows = '';
+  featImp.forEach(r => {
+    const v = r.Variable;
+    const blp = _safeNum(r.Importance, 0);
+    const shap = shapMap[v] || 0;
+    const blpShare = (blp / totalBLP * 100);
+    const shapShare = (shap / totalSHAP * 100);
+    rows += `<tr>
+      <td><b>${v}</b></td>
+      <td class="num">${blp.toFixed(4)}</td>
+      <td class="num">${blpShare.toFixed(1)}%</td>
+      <td class="num">${shap.toFixed(4)}</td>
+      <td class="num">${shapShare.toFixed(1)}%</td>
+      <td>${_statusChip(calibP === null ? null : isCalibrated, isFa, 'کالیبره', 'نیاز به بازبینی')}</td>
+    </tr>`;
+  });
+
+  cont.innerHTML = head + `<div class="interp-table-wrap"><table class="interp-table">
+    <thead><tr>
+      <th>${isFa?'متغیر تعدیل‌گر':'Moderator'}</th>
+      <th>${isFa?'اهمیت BLP':'BLP Importance'}</th>
+      <th>${isFa?'سهم BLP':'BLP Share'}</th>
+      <th>${isFa?'اهمیت SHAP':'SHAP Importance'}</th>
+      <th>${isFa?'سهم SHAP':'SHAP Share'}</th>
+      <th>${isFa?'وضعیت':'Status'}</th>
+    </tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+/* ---- جدول ۲: Monte Carlo ---- */
+function renderMonteCarloTable(){
+  const cont = document.getElementById('monte-carlo-table-container');
+  if (!cont) return;
+  const mc = (state.loaded && state.loaded.monteCarlo) || FALLBACK_MONTE_CARLO;
+  const isFa = state.lang === 'fa';
+
+  const all = [...(mc.Indirect_Effects || []), ...(mc.Moderator_Effects || [])];
+  if (!all.length) { cont.innerHTML = ''; return; }
+
+  const head = `<div class="interp-table-head">
+    <h3>${isFa ? 'جدول تفسیر Monte Carlo — مقایسه با SmartPLS' : 'Monte Carlo Interpretation Table — vs SmartPLS'}</h3>
+    <div class="interp-table-summary">
+      <span>K: <b>10,000</b></span>
+      <span>${isFa?'روش':'Method'}: <b>Percentile Bootstrap</b></span>
+    </div>
+  </div>`;
+
+  let rows = '';
+  all.forEach(r => {
+    const sm = _safeNum(r.SmartPLS_Beta, 0);
+    const mn = _safeNum(r.MC_Mean, 0);
+    const sd = _safeNum(r.MC_SD ?? r.SD ?? r.SD_MC ?? r.StdDev, null);
+    const lo = _safeNum(r.CI_Low, null);
+    const hi = _safeNum(r.CI_High, null);
+    const delta = mn - sm;
+    const absDelta = Math.abs(delta);
+    const deltaCls = absDelta < 0.02 ? 'status-ok' : (absDelta < 0.05 ? 'status-warn' : 'status-bad');
+    const sig = (lo !== null && hi !== null) ? (lo > 0 || hi < 0) : null;
+    const resultTxt = sig === null ? (r.Result || '—') :
+      (sig ? (isFa?'معنادار':'Significant') : (isFa?'غیرمعنادار':'Not sig.'));
+
+    rows += `<tr>
+      <td><b>${r.Hypothesis}</b></td>
+      <td class="num">${sm.toFixed(4)}</td>
+      <td class="num">${mn.toFixed(4)}</td>
+      <td class="num">${sd !== null ? sd.toFixed(4) : '—'}</td>
+      <td class="num">${lo !== null ? lo.toFixed(4) : '—'}</td>
+      <td class="num">${hi !== null ? hi.toFixed(4) : '—'}</td>
+      <td class="num ${deltaCls}">${delta >= 0 ? '+' : ''}${delta.toFixed(5)}</td>
+      <td>${resultTxt}</td>
+    </tr>`;
+  });
+
+  cont.innerHTML = head + `<div class="interp-table-wrap"><table class="interp-table">
+    <thead><tr>
+      <th>${isFa?'فرضیه':'Hypothesis'}</th>
+      <th>${isFa?'β SmartPLS':'SmartPLS β'}</th>
+      <th>${isFa?'میانگین MC':'MC Mean'}</th>
+      <th>${isFa?'SD MC':'MC SD'}</th>
+      <th>${isFa?'CI پایین ۲.۵٪':'CI Low 2.5%'}</th>
+      <th>${isFa?'CI بالا ۹۷.۵٪':'CI High 97.5%'}</th>
+      <th>Δ</th>
+      <th>${isFa?'نتیجه':'Result'}</th>
+    </tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+/* ---- جدول ۳: Simple Slopes (با SE، T، P) ---- */
+function renderSimpleSlopesTable(){
+  const cont = document.getElementById('simple-slopes-table-container');
+  if (!cont) return;
+  const cf = (state.loaded && state.loaded.causalForest) || FALLBACK_CAUSAL_FOREST;
+  const isFa = state.lang === 'fa';
+  const ss = cf.Simple_Slopes || [];
+
+  const head = `<div class="interp-table-head">
+    <h3>${isFa ? 'جدول تفسیر تحلیل شیب ساده' : 'Simple Slopes Interpretation Table'}</h3>
+    <div class="interp-table-summary">
+      <span>${isFa?'سطوح':'Levels'}: <b>−1SD / Mean / +1SD</b></span>
+      <span>${isFa?'روش':'Method'}: <b>${isFa?'بوت‌استرپ econml':'econml bootstrap'}</b></span>
+    </div>
+  </div>`;
+
+  if (!ss.length) {
+    cont.innerHTML = head + `<div class="interp-table-wrap"><div style="padding:20px;text-align:center;color:var(--text-muted)">
+      ${isFa ? 'شیت Simple_Slopes یافت نشد — لطفاً اسکریپت پایتون را با پچ B اجرا کنید.' : 'Simple_Slopes sheet not found — run Python script with Patch B.'}
+    </div></div>`;
+    return;
+  }
+
+  let rows = '';
+  ss.forEach(r => {
+    const mod = r.Moderator || r.Mod || '—';
+    const lvl = r.Level || r.Slope_Level || '—';
+    const val = _safeNum(r.HG_Value ?? r.Moderator_Value ?? r.Value, null);
+    const slope = _safeNum(r.DT_Effect_on_SUS ?? r.Slope ?? r.Effect ?? r.Beta, null);
+    const se = _safeNum(r.SE ?? r.Std_Error ?? r.SD, null);
+    const t = _safeNum(r.T_Value ?? r.T ?? r.t_value, null);
+    const p = _safeNum(r.P_Value ?? r.P ?? r.p_value, null);
+    const lo = _safeNum(r.CI_Lower ?? r.CI_Low, null);
+    const hi = _safeNum(r.CI_Upper ?? r.CI_High, null);
+
+    let sig = null;
+    if (r.Significant === 'بله' || r.Significant === 'Yes') sig = true;
+    else if (r.Significant === 'خیر' || r.Significant === 'No') sig = false;
+    else if (p !== null) sig = (p < 0.05);
+    else if (lo !== null && hi !== null) sig = (lo > 0 || hi < 0);
+
+    rows += `<tr>
+      <td><b>${mod}</b></td>
+      <td>${lvl}</td>
+      <td class="num">${val !== null ? val.toFixed(3) : '—'}</td>
+      <td class="num">${slope !== null ? slope.toFixed(4) : '—'}</td>
+      <td class="num">${se !== null ? se.toFixed(4) : '—'}</td>
+      <td class="num">${t !== null ? t.toFixed(2) : '—'}</td>
+      <td class="num">${p !== null ? p.toFixed(4) : '—'}</td>
+      <td class="num">${(lo !== null && hi !== null) ? `[${lo.toFixed(3)}, ${hi.toFixed(3)}]` : '—'}</td>
+      <td>${sig === null ? '—' : (sig ? `<span class="status-ok">✓ ${isFa?'معنادار':'Significant'}</span>` : `<span class="status-bad">✕ ${isFa?'غیرمعنادار':'Not significant'}</span>`)}</td>
+    </tr>`;
+  });
+
+  cont.innerHTML = head + `<div class="interp-table-wrap"><table class="interp-table">
+    <thead><tr>
+      <th>${isFa?'تعدیل‌گر':'Moderator'}</th>
+      <th>${isFa?'سطح':'Level'}</th>
+      <th>${isFa?'مقدار':'Value'}</th>
+      <th>${isFa?'شیب (β)':'Slope (β)'}</th>
+      <th>SE</th>
+      <th>t</th>
+      <th>p</th>
+      <th>CI 95%</th>
+      <th>${isFa?'نتیجه':'Result'}</th>
+    </tr></thead><tbody>${rows}</tbody></table></div>`;
+}
 
 /* ================================================================
    TEST NAMES + togglePanel
@@ -2450,11 +2738,15 @@ function renderChartsForActiveTab(){
   const id = active.id.replace('section-','');
   document.querySelectorAll('.plot').forEach(el => { if(el.children && el.children.length) { try { Plotly.purge(el); } catch(e){} } });
   try{
-    if(id === 'causal-ml'){ renderCausalMLSection(); return; }
-    if(id === 'shap'){ renderSHAPSection(); return; }
-    if(id === 'monte-carlo'){ renderMonteCarloSection(); return; }
-    if (isMobile()) { renderMobileCharts(id); }
-    else {
+    if(id === 'causal-ml'){
+      renderCausalMLSection();
+    } else if(id === 'shap'){
+      renderSHAPSection();
+    } else if(id === 'monte-carlo'){
+      renderMonteCarloSection();
+    } else if (isMobile()) {
+      renderMobileCharts(id);
+    } else {
       switch(id){
         case 'descriptive': renderDescriptiveStatistics(); break;
         case 'l1-path': drawL1PathDiagram(); drawL1BetaBar(); break;
