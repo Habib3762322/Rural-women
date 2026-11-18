@@ -1,5 +1,5 @@
 /* ================================================================
-   Excel Loader — نسخهٔ نهایی (فاز ۲ + پچ readExcel)
+   Excel Loader — نسخهٔ نهایی (فاز ۲ + پچ readExcel + Simple Slopes)
    ================================================================ */
 
 const CONSTRUCT_MAP = {
@@ -597,12 +597,23 @@ async function loadReliabilityTables(){
   }
 }
 
-/* ============== Causal Forest ============== */
+/* ============== Causal Forest — نسخهٔ نهایی با Simple_Slopes و Calibration_Test ============== */
 async function loadCausalForest(){
   try{
     const wb = await readExcel('causal_forest_results.xlsx');
     const result = {};
-    const sheets = ['CATE_Distribution','HG_Quartiles','Feature_Importance','Full_Data','SHAP_Values','SHAP_Importance','Overview'];
+    // 🔧 پچ: افزودن Simple_Slopes و Calibration_Test
+    const sheets = [
+      'CATE_Distribution',
+      'HG_Quartiles',
+      'Feature_Importance',
+      'Full_Data',
+      'SHAP_Values',
+      'SHAP_Importance',
+      'Overview',
+      'Simple_Slopes',      // ← جدید: جدول شیب ساده
+      'Calibration_Test'    // ← جدید: آزمون کالیبراسیون
+    ];
     let anyFound = false;
     for(const sheetName of sheets){
       if(wb.Sheets[sheetName]){
@@ -611,11 +622,56 @@ async function loadCausalForest(){
       }
     }
     if(!anyFound) throw new Error('No sheets found');
+
+    /* ===== ساخت OverviewObj از شیت Overview ===== */
     if(result.Overview){
       const ovObj = {};
       result.Overview.forEach(row => { if(row.Metric) ovObj[row.Metric] = row.Value; });
       result.OverviewObj = ovObj;
     }
+
+    /* ===== پچ: اگر Overview کلید Calibration_Test_Pval نداشت یا 'N/A' بود،
+             از شیت Calibration_Test استخراج کن ===== */
+    if(result.OverviewObj && Array.isArray(result.Calibration_Test) && result.Calibration_Test.length){
+      const curP = result.OverviewObj.Calibration_Test_Pval;
+      const curIsMissing = (curP == null || (typeof curP === 'string' && (curP === 'N/A' || curP === '')) || (typeof curP === 'number' && isNaN(curP)));
+      if(curIsMissing){
+        const ct = result.Calibration_Test;
+        const first = ct[0] || {};
+        // نام‌های احتمالی ستون p-value
+        const pCandidates = ['BLP_F_pval', 'Calibration_Test_Pval', 'p_value', 'P_Value', 'pvalue', 'p', 'Calib_P'];
+        for(const k of pCandidates){
+          const v = first[k];
+          if(v != null && v !== '' && !isNaN(Number(v))){
+            result.OverviewObj.Calibration_Test_Pval = Number(v);
+            break;
+          }
+        }
+        // اگر باز هم پیدا نشد، شیت Metric/Value را جستجو کن
+        if(result.OverviewObj.Calibration_Test_Pval == null || isNaN(Number(result.OverviewObj.Calibration_Test_Pval))){
+          const metricRow = ct.find(r => r.Metric && /calib|p[_ ]?value|blp_f_pval/i.test(String(r.Metric)));
+          if(metricRow && metricRow.Value != null && !isNaN(Number(metricRow.Value))){
+            result.OverviewObj.Calibration_Test_Pval = Number(metricRow.Value);
+          }
+        }
+      }
+
+      /* ===== پچ: اگر Overview کلید BLP_R2 نداشت، از Calibration_Test استخراج کن ===== */
+      const curR2 = result.OverviewObj.BLP_R2;
+      const r2Missing = (curR2 == null || (typeof curR2 === 'string' && (curR2 === 'N/A' || curR2 === '')) || (typeof curR2 === 'number' && isNaN(curR2)));
+      if(r2Missing){
+        const first = result.Calibration_Test[0] || {};
+        const r2Candidates = ['BLP_R2', 'R2', 'R2_BLP', 'r_squared', 'R_Squared'];
+        for(const k of r2Candidates){
+          const v = first[k];
+          if(v != null && v !== '' && !isNaN(Number(v))){
+            result.OverviewObj.BLP_R2 = Number(v);
+            break;
+          }
+        }
+      }
+    }
+
     return {data: result, source:'excel'};
   }catch(e){
     return {data: FALLBACK_CAUSAL_FOREST, source:'fallback'};
