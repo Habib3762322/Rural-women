@@ -2419,42 +2419,50 @@ function renderCausalForestTable(){
   shapImp.forEach(s => { shapMap[s.Feature] = _safeNum(s.Mean_Abs_SHAP, 0); });
 
   const totalBLP = featImp.reduce((s, d) => s + _safeNum(d.Importance, 0), 0) || 1;
-  const totalSHAP = shapImp.reduce((s, d) => s + _safeNum(s.Mean_Abs_SHAP, 0), 0) || 1;
+  const totalSHAP = shapImp.reduce((s, d) => s + _safeNum(d.Mean_Abs_SHAP, 0), 0) || 1;
 
-  let head = `<div class="interp-table-head">
-    <h3>${isFa ? 'جدول تفسیر Causal Forest (CATE)' : 'Causal Forest Interpretation Table'}</h3>
-    <div class="interp-table-summary">
-      <span>${isFa?'R² مدل BLP':'BLP R²'}: <b>${blpR2 !== null ? blpR2.toFixed(3) : '—'}</b></span>
-      <span>${isFa?'p-value کالیبراسیون':'Calibration p-value'}: <b>${calibP !== null ? calibP.toFixed(4) : '—'}</b></span>
-      <span>${_statusChip(calibP === null ? null : isCalibrated, isFa, 'کالیبره', 'نیاز به بازبینی')}</span>
-    </div>
-  </div>`;
+  const head = `<div class="hyp-hint">💡 ${isFa
+    ? `R² مدل BLP = <b>${blpR2 !== null ? blpR2.toFixed(3) : '—'}</b> · p-value کالیبراسیون = <b>${calibP !== null ? calibP.toFixed(4) : '—'}</b> · ${isCalibrated ? '✅ کالیبره' : '⚠ نیاز به بازبینی'}`
+    : `BLP R² = <b>${blpR2 !== null ? blpR2.toFixed(3) : '—'}</b> · Calibration p = <b>${calibP !== null ? calibP.toFixed(4) : '—'}</b> · ${isCalibrated ? '✅ Calibrated' : '⚠ Needs review'}`
+  }</div>`;
 
   if (!featImp.length) {
-    cont.innerHTML = head + `<div class="interp-table-wrap"><div style="padding:20px;text-align:center;color:var(--text-muted)">${isFa?'شیت Feature_Importance یافت نشد':'Feature_Importance sheet not found'}</div></div>`;
+    cont.innerHTML = head + `<div class="hyp-empty">${isFa?'شیت Feature_Importance یافت نشد':'Feature_Importance sheet not found'}</div>`;
     return;
   }
 
   let rows = '';
   featImp.forEach(r => {
     const v = r.Variable;
+    const shortLabel = v === 'HG_score' ? 'HG' : (v === 'PR_score' ? 'PR' : v.replace('_score',''));
+    const typeCls = 'hyp-type ' + (shortLabel === 'HG' ? 'hyp-type-moderator' : 'hyp-type-direct');
+    const typeTxt = isFa
+      ? (shortLabel === 'HG' ? 'تعدیل‌گر' : 'پیش‌نیاز')
+      : (shortLabel === 'HG' ? 'Moderator' : 'Prerequisite');
     const blp = _safeNum(r.Importance, 0);
     const shap = shapMap[v] || 0;
     const blpShare = (blp / totalBLP * 100);
     const shapShare = (shap / totalSHAP * 100);
-    rows += `<tr>
-      <td><b>${v}</b></td>
-      <td class="num">${blp.toFixed(4)}</td>
-      <td class="num">${blpShare.toFixed(1)}%</td>
-      <td class="num">${shap.toFixed(4)}</td>
-      <td class="num">${shapShare.toFixed(1)}%</td>
-      <td>${_statusChip(calibP === null ? null : isCalibrated, isFa, 'کالیبره', 'نیاز به بازبینی')}</td>
+    const betaColor = betaHeatColor(blp);
+    const resCls = isCalibrated ? 'hyp-res-confirmed' : 'hyp-res-rejected';
+    const resIcon = isCalibrated ? '✓' : '✕';
+    const resTxt = isCalibrated ? (isFa?'کالیبره':'Calibrated') : (isFa?'بازبینی':'Review');
+
+    rows += `<tr class="hyp-row">
+      <td class="hyp-id"><span class="hyp-id-chip">${shortLabel}</span></td>
+      <td><span class="${typeCls}">${typeTxt}</span></td>
+      <td class="hyp-num"><span class="hyp-beta" style="background:${betaColor}">${blp.toFixed(4)}</span></td>
+      <td class="hyp-num">${blpShare.toFixed(1)}%</td>
+      <td class="hyp-num">${shap.toFixed(4)}</td>
+      <td class="hyp-num">${shapShare.toFixed(1)}%</td>
+      <td><span class="hyp-res ${resCls}"><span class="hyp-res-icon">${resIcon}</span>${resTxt}</span></td>
     </tr>`;
   });
 
-  cont.innerHTML = head + `<div class="interp-table-wrap"><table class="interp-table">
+  cont.innerHTML = head + `<div class="hyp-table-wrap"><table class="hyp-table">
     <thead><tr>
-      <th>${isFa?'متغیر تعدیل‌گر':'Moderator'}</th>
+      <th>${isFa?'متغیر':'Variable'}</th>
+      <th>${isFa?'نوع':'Type'}</th>
       <th>${isFa?'اهمیت BLP':'BLP Importance'}</th>
       <th>${isFa?'سهم BLP':'BLP Share'}</th>
       <th>${isFa?'اهمیت SHAP':'SHAP Importance'}</th>
@@ -2462,7 +2470,6 @@ function renderCausalForestTable(){
       <th>${isFa?'وضعیت':'Status'}</th>
     </tr></thead><tbody>${rows}</tbody></table></div>`;
 }
-
 /* ---- جدول ۲: Monte Carlo ---- */
 function renderMonteCarloTable(){
   const cont = document.getElementById('monte-carlo-table-container');
@@ -2473,16 +2480,18 @@ function renderMonteCarloTable(){
   const all = [...(mc.Indirect_Effects || []), ...(mc.Moderator_Effects || [])];
   if (!all.length) { cont.innerHTML = ''; return; }
 
-  const head = `<div class="interp-table-head">
-    <h3>${isFa ? 'جدول تفسیر Monte Carlo — مقایسه با SmartPLS' : 'Monte Carlo Interpretation Table — vs SmartPLS'}</h3>
-    <div class="interp-table-summary">
-      <span>K: <b>10,000</b></span>
-      <span>${isFa?'روش':'Method'}: <b>Percentile Bootstrap</b></span>
-    </div>
-  </div>`;
+  const head = `<div class="hyp-hint">💡 ${isFa
+    ? `K = <b>10,000</b> شبیه‌سازی · روش: <b>Percentile Bootstrap</b> · مقایسهٔ استحکام با SmartPLS`
+    : `K = <b>10,000</b> simulations · Method: <b>Percentile Bootstrap</b> · Robustness comparison vs SmartPLS`
+  }</div>`;
 
   let rows = '';
   all.forEach(r => {
+    const isMed = r.Hypothesis.startsWith('H3');
+    const typeCls = 'hyp-type ' + (isMed ? 'hyp-type-mediation' : 'hyp-type-moderator');
+    const typeTxt = isFa
+      ? (isMed ? 'میانجی' : 'تعدیل‌گر')
+      : (isMed ? 'Mediation' : 'Moderator');
     const sm = _safeNum(r.SmartPLS_Beta, 0);
     const mn = _safeNum(r.MC_Mean, 0);
     const sd = _safeNum(r.MC_SD ?? r.SD ?? r.SD_MC ?? r.StdDev, null);
@@ -2490,36 +2499,39 @@ function renderMonteCarloTable(){
     const hi = _safeNum(r.CI_High, null);
     const delta = mn - sm;
     const absDelta = Math.abs(delta);
-    const deltaCls = absDelta < 0.02 ? 'status-ok' : (absDelta < 0.05 ? 'status-warn' : 'status-bad');
+    // Δ سبز اگر همسویی کامل، قرمز اگر نیاز به بازبینی
+    const deltaCls = absDelta < 0.02 ? 'hyp-p hyp-p-sig' : (absDelta < 0.05 ? 'hyp-p' : 'hyp-p hyp-p-ns');
+    const betaColor = betaHeatColor(mn);
     const sig = (lo !== null && hi !== null) ? (lo > 0 || hi < 0) : null;
-    const resultTxt = sig === null ? (r.Result || '—') :
-      (sig ? (isFa?'معنادار':'Significant') : (isFa?'غیرمعنادار':'Not sig.'));
+    const resCls = sig ? 'hyp-res-confirmed' : 'hyp-res-rejected';
+    const resIcon = sig ? '✓' : '✕';
+    const resTxt = sig === null ? (r.Result || '—') : (sig ? (isFa?'تأیید':'Confirmed') : (isFa?'رد':'Rejected'));
+    const ciTxt = (lo !== null && hi !== null) ? `[${lo.toFixed(3)}, ${hi.toFixed(3)}]` : '—';
 
-    rows += `<tr>
-      <td><b>${r.Hypothesis}</b></td>
-      <td class="num">${sm.toFixed(4)}</td>
-      <td class="num">${mn.toFixed(4)}</td>
-      <td class="num">${sd !== null ? sd.toFixed(4) : '—'}</td>
-      <td class="num">${lo !== null ? lo.toFixed(4) : '—'}</td>
-      <td class="num">${hi !== null ? hi.toFixed(4) : '—'}</td>
-      <td class="num ${deltaCls}">${delta >= 0 ? '+' : ''}${delta.toFixed(5)}</td>
-      <td>${resultTxt}</td>
+    rows += `<tr class="hyp-row">
+      <td class="hyp-id"><span class="hyp-id-chip">${r.Hypothesis}</span></td>
+      <td><span class="${typeCls}">${typeTxt}</span></td>
+      <td class="hyp-num">${sm.toFixed(3)}</td>
+      <td class="hyp-num"><span class="hyp-beta" style="background:${betaColor}">${mn.toFixed(3)}</span></td>
+      <td class="hyp-num">${sd !== null ? sd.toFixed(3) : '—'}</td>
+      <td class="hyp-num" style="font-size:11px">${ciTxt}</td>
+      <td class="hyp-num"><span class="${deltaCls}">${delta >= 0 ? '+' : ''}${delta.toFixed(4)}</span></td>
+      <td><span class="hyp-res ${resCls}"><span class="hyp-res-icon">${resIcon}</span>${resTxt}</span></td>
     </tr>`;
   });
 
-  cont.innerHTML = head + `<div class="interp-table-wrap"><table class="interp-table">
+  cont.innerHTML = head + `<div class="hyp-table-wrap"><table class="hyp-table">
     <thead><tr>
       <th>${isFa?'فرضیه':'Hypothesis'}</th>
+      <th>${isFa?'نوع':'Type'}</th>
       <th>${isFa?'β SmartPLS':'SmartPLS β'}</th>
       <th>${isFa?'میانگین MC':'MC Mean'}</th>
-      <th>${isFa?'SD MC':'MC SD'}</th>
-      <th>${isFa?'CI پایین ۲.۵٪':'CI Low 2.5%'}</th>
-      <th>${isFa?'CI بالا ۹۷.۵٪':'CI High 97.5%'}</th>
+      <th>${isFa?'SD':'SD'}</th>
+      <th>${isFa?'CI ۹۵٪':'CI 95%'}</th>
       <th>Δ</th>
       <th>${isFa?'نتیجه':'Result'}</th>
     </tr></thead><tbody>${rows}</tbody></table></div>`;
 }
-
 /* ---- جدول ۳: Simple Slopes (با SE، T، P) ---- */
 function renderSimpleSlopesTable(){
   const cont = document.getElementById('simple-slopes-table-container');
@@ -2528,25 +2540,30 @@ function renderSimpleSlopesTable(){
   const isFa = state.lang === 'fa';
   const ss = cf.Simple_Slopes || [];
 
-  const head = `<div class="interp-table-head">
-    <h3>${isFa ? 'جدول تفسیر تحلیل شیب ساده' : 'Simple Slopes Interpretation Table'}</h3>
-    <div class="interp-table-summary">
-      <span>${isFa?'سطوح':'Levels'}: <b>−1SD / Mean / +1SD</b></span>
-      <span>${isFa?'روش':'Method'}: <b>${isFa?'بوت‌استرپ econml':'econml bootstrap'}</b></span>
-    </div>
-  </div>`;
+  const head = `<div class="hyp-hint">💡 ${isFa
+    ? `سطوح تعدیل‌گر: <b>−1SD / Mean / +1SD</b> · روش: <b>بوت‌استرپ econml</b>`
+    : `Moderator levels: <b>−1SD / Mean / +1SD</b> · Method: <b>econml bootstrap</b>`
+  }</div>`;
 
   if (!ss.length) {
-    cont.innerHTML = head + `<div class="interp-table-wrap"><div style="padding:20px;text-align:center;color:var(--text-muted)">
-      ${isFa ? 'شیت Simple_Slopes یافت نشد — لطفاً اسکریپت پایتون را با پچ B اجرا کنید.' : 'Simple_Slopes sheet not found — run Python script with Patch B.'}
-    </div></div>`;
+    cont.innerHTML = head + `<div class="hyp-empty">${isFa
+      ? 'شیت Simple_Slopes یافت نشد — لطفاً اسکریپت پایتون را با پچ B اجرا کنید.'
+      : 'Simple_Slopes sheet not found — run Python script with Patch B.'}</div>`;
     return;
   }
 
+  // رنگ‌های سطح: کم = قرمز، متوسط = آبی، زیاد = سبز (گرادیان بصری)
+  const levelTypeMap = {
+    'کم (-1SD)': 'hyp-type-nonlinear',
+    'متوسط (Mean)': 'hyp-type-direct',
+    'زیاد (+1SD)': 'hyp-type-moderator'
+  };
+
   let rows = '';
   ss.forEach(r => {
-    const mod = r.Moderator || r.Mod || '—';
-    const lvl = r.Level || r.Slope_Level || '—';
+    const mod = r.Moderator || 'HG';
+    const lvl = r.Level || '—';
+    const typeCls = 'hyp-type ' + (levelTypeMap[lvl] || 'hyp-type-direct');
     const val = _safeNum(r.HG_Value ?? r.Moderator_Value ?? r.Value, null);
     const slope = _safeNum(r.DT_Effect_on_SUS ?? r.Slope ?? r.Effect ?? r.Beta, null);
     const se = _safeNum(r.SE ?? r.Std_Error ?? r.SD, null);
@@ -2561,20 +2578,27 @@ function renderSimpleSlopesTable(){
     else if (p !== null) sig = (p < 0.05);
     else if (lo !== null && hi !== null) sig = (lo > 0 || hi < 0);
 
-    rows += `<tr>
-      <td><b>${mod}</b></td>
-      <td>${lvl}</td>
-      <td class="num">${val !== null ? val.toFixed(3) : '—'}</td>
-      <td class="num">${slope !== null ? slope.toFixed(4) : '—'}</td>
-      <td class="num">${se !== null ? se.toFixed(4) : '—'}</td>
-      <td class="num">${t !== null ? t.toFixed(2) : '—'}</td>
-      <td class="num">${p !== null ? p.toFixed(4) : '—'}</td>
-      <td class="num">${(lo !== null && hi !== null) ? `[${lo.toFixed(3)}, ${hi.toFixed(3)}]` : '—'}</td>
-      <td>${sig === null ? '—' : (sig ? `<span class="status-ok">✓ ${isFa?'معنادار':'Significant'}</span>` : `<span class="status-bad">✕ ${isFa?'غیرمعنادار':'Not significant'}</span>`)}</td>
+    const slopeColor = slope !== null ? betaHeatColor(slope) : 'transparent';
+    const pCls = p !== null && p < 0.05 ? 'hyp-p hyp-p-sig' : 'hyp-p hyp-p-ns';
+    const resCls = sig ? 'hyp-res-confirmed' : 'hyp-res-rejected';
+    const resIcon = sig ? '✓' : '✕';
+    const resTxt = sig === null ? '—' : (sig ? (isFa?'معنادار':'Significant') : (isFa?'غیرمعنادار':'Not sig.'));
+    const ciTxt = (lo !== null && hi !== null) ? `[${lo.toFixed(3)}, ${hi.toFixed(3)}]` : '—';
+
+    rows += `<tr class="hyp-row">
+      <td class="hyp-id"><span class="hyp-id-chip">${mod}</span></td>
+      <td><span class="${typeCls}">${lvl}</span></td>
+      <td class="hyp-num">${val !== null ? val.toFixed(3) : '—'}</td>
+      <td class="hyp-num"><span class="hyp-beta" style="background:${slopeColor}">${slope !== null ? slope.toFixed(3) : '—'}</span></td>
+      <td class="hyp-num">${se !== null ? se.toFixed(4) : '—'}</td>
+      <td class="hyp-num"><span class="hyp-t-chip">${t !== null ? t.toFixed(2) : '—'}</span></td>
+      <td class="hyp-num"><span class="${pCls}">${p !== null ? p.toFixed(4) : '—'}</span></td>
+      <td class="hyp-num" style="font-size:11px">${ciTxt}</td>
+      <td><span class="hyp-res ${resCls}"><span class="hyp-res-icon">${resIcon}</span>${resTxt}</span></td>
     </tr>`;
   });
 
-  cont.innerHTML = head + `<div class="interp-table-wrap"><table class="interp-table">
+  cont.innerHTML = head + `<div class="hyp-table-wrap"><table class="hyp-table">
     <thead><tr>
       <th>${isFa?'تعدیل‌گر':'Moderator'}</th>
       <th>${isFa?'سطح':'Level'}</th>
@@ -2583,11 +2607,10 @@ function renderSimpleSlopesTable(){
       <th>SE</th>
       <th>t</th>
       <th>p</th>
-      <th>CI 95%</th>
+      <th>${isFa?'CI ۹۵٪':'CI 95%'}</th>
       <th>${isFa?'نتیجه':'Result'}</th>
     </tr></thead><tbody>${rows}</tbody></table></div>`;
 }
-
 /* ================================================================
    TEST NAMES + togglePanel
    ================================================================ */
