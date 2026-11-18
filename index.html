@@ -20,6 +20,33 @@
     };
   })();
 </script>
+
+<!-- ===== CSS جداول تفسیری جدید (Causal Forest / Monte Carlo / Simple Slopes) ===== -->
+<style>
+  .interp-tables-section { width: 100%; }
+  .interp-table-head {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 12px; padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(52,152,219,.08), rgba(155,89,182,.08));
+    border-radius: 10px; border-right: 4px solid #3498db;
+  }
+  .interp-table-head h3 { margin: 0; font-size: 15px; font-weight: 800; color: var(--text); }
+  .interp-table-summary { display: flex; gap: 18px; font-size: 12px; color: var(--text-muted); flex-wrap: wrap; }
+  .interp-table-summary b { color: var(--text); }
+  .interp-table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); }
+  .interp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .interp-table thead th {
+    background: var(--bg2); color: var(--text); font-weight: 800;
+    padding: 10px 12px; text-align: right; border-bottom: 2px solid var(--border); white-space: nowrap;
+  }
+  .interp-table tbody td { padding: 9px 12px; border-bottom: 1px solid var(--border); text-align: right; }
+  .interp-table tbody tr:hover { background: var(--bg2); }
+  .interp-table .num { font-family: 'Courier New', monospace; direction: ltr; text-align: center; }
+  .interp-table .status-ok { color: #27ae60; font-weight: 700; }
+  .interp-table .status-warn { color: #f39c12; font-weight: 700; }
+  .interp-table .status-bad { color: #e74c3c; font-weight: 700; }
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"></script><script src="lib/xlsx.full.min.js"></script>
 <script src="lib/mammoth.browser.min.js"></script>
 </head>
